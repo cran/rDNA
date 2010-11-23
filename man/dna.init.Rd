@@ -20,15 +20,13 @@ dna-1.xx.jar file to the method.
 \code{\link{dna.attributes}}
 }
 \author{
-Philip Leifeld
-\url{http://www.philipleifeld.de}
+Philip Leifeld (\url{http://www.philipleifeld.de})
 }
 \examples{
-download.file("http://www.philipleifeld.de/cms/upload/Downloads/dna-1.23.jar", destfile="dna-1.23.jar")
-dna.init("dna-1.23.jar")
-  
-## including a full path:
-# dna.init("/home/user/Desktop/dna-1.23.jar")
+download.file(
+  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.24.jar", 
+  destfile="dna-1.24.jar", mode="wb")
+dna.init("dna-1.24.jar")
 }
 \keyword{Programming|programming|interface}
 \keyword{Programming|IO}

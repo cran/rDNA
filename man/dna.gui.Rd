@@ -18,8 +18,7 @@ to \R.
 \code{\link{dna.attributes}}
 }
 \author{
-Philip Leifeld
-\url{http://www.philipleifeld.de}
+Philip Leifeld (\url{http://www.philipleifeld.de})
 }
 \keyword{Programming|programming|interface}
 \keyword{Programming|IO}

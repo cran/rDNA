@@ -22,13 +22,16 @@ and \code{color} (the \acronym{RGB} color used in \acronym{DNA}).
 \code{\link{dna.network}}
 }
 \author{
-Philip Leifeld
-\url{http://www.philipleifeld.de}
+Philip Leifeld (\url{http://www.philipleifeld.de})
 }
 \examples{
-download.file("http://www.philipleifeld.de/cms/upload/Downloads/dna-1.23.jar", destfile="dna-1.23.jar")
-download.file("http://www.philipleifeld.de/cms/upload/Downloads/sample.dna", destfile="sample.dna")
-dna.init("dna-1.23.jar")
+download.file(
+  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.24.jar", 
+  destfile="dna-1.24.jar", mode="wb")
+download.file(
+  "http://www.philipleifeld.de/cms/upload/Downloads/sample.dna", 
+  destfile="sample.dna", mode="wb")
+dna.init("dna-1.24.jar")
 attributes <- dna.attributes("sample.dna", TRUE)
 }
 \keyword{Programming|programming|interface}

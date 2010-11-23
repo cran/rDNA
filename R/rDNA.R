@@ -1,4 +1,9 @@
-check <- require(rJava)
+# rDNA 1.1
+# http://www.philipleifeld.de
+# Philip Leifeld <Leifeld@coll.mpg.de>
+# 2010-11-23
+
+require(rJava)
 
 dna.init <- function(dna.jar.file) {
   .jinit(dna.jar.file, force.init=TRUE)
@@ -73,3 +78,157 @@ dna.attributes <- function(infile, organizations=TRUE) {
   return(data)
 }
 
+dna.density <- function(network.matrix, partitions="", weighted=FALSE, verbose=FALSE) {
+  x <- dim(network.matrix)[1]
+  y <- dim(network.matrix)[2]
+  numCells <- x*y
+  
+  if (length(partitions) <= 1) {
+    density <- 0
+    if (weighted == FALSE) {
+      for (i in 1:length(network.matrix)) {
+        if (network.matrix[i] != 0) {
+          density <- density + 1
+        }
+      }
+      density <- density / numCells
+      if (verbose == TRUE) {
+        cat("\nOverall (binary) density: ")
+      }
+    } else if (weighted == TRUE) {
+      density <- sum(network.matrix) / numCells
+      if (verbose == TRUE) {
+        cat("\nOverall (weighted) density: ")
+      }
+    }
+    cat(density)
+    cat("\n")
+  return(density)
+  } else {
+    if (class(partitions) != "data.frame"  && class(partitions) != "matrix") {
+      warning("Partitions must be provided as a one-column data.frame or matrix.")
+    } else if (length(rownames(partitions)) == 0 && length(partitions) == length(network.matrix)) {
+      rownames(partitions) <- rownames(network.matrix)
+    }
+    groups <- character(0)
+    for (i in 1:length(partitions)) {
+      if (! partitions[i] %in% groups) {
+        groups <- append(groups, partitions[i])
+      }
+    }
+    
+    groupDensityTable <- matrix(0, nrow=length(groups), ncol=length(groups))
+    groupFrequencyTable <- matrix(0, nrow=length(groups), ncol=length(groups))
+    
+    for (i in 1:x) {
+      for (j in 1:y) {
+        mrn <- rownames(network.matrix)[i]
+        mcn <- rownames(network.matrix)[j]
+        for (k in 1:length(partitions)) {
+          prn <- rownames(partitions)[k]
+          if (prn == mrn) {
+            rGroup <- partitions[k]
+            rGroupRow <- k
+          }
+          if (prn == mcn) {
+            cGroup <- partitions[k]
+            cGroupRow <- k
+          }
+        }
+        for (k in 1:length(groups)) {
+          if (groups[k] == rGroup) {
+            rowCounter <- k
+          }
+          if (groups[k] == cGroup) {
+            colCounter <- k
+          }
+        }
+        if (weighted == TRUE) {
+          groupDensityTable[rowCounter,colCounter] <- groupDensityTable[rowCounter,colCounter] + network.matrix[i,j]
+        } else if (weighted == FALSE) {
+          if (network.matrix[i,j] > 0) {
+            value <- 1
+          } else {
+            value <- 0
+          }
+          groupDensityTable[rowCounter,colCounter] <- groupDensityTable[rowCounter,colCounter] + value
+        }
+        groupFrequencyTable[rowCounter,colCounter] <- groupFrequencyTable[rowCounter,colCounter] + 1
+      }
+    }
+    
+    density <- groupDensityTable / groupFrequencyTable
+    rownames(density) <- groups
+    colnames(density) <- groups
+    
+    if (verbose == TRUE) {
+      cat("\nNumber of partitions: ")
+      cat(length(groups))
+      cat("\n")
+      for (i in 1:length(groups)) {
+        cat("group ")
+        cat(i)
+        cat(": ")
+        cat(groups[i])
+        cat("\n")
+      }
+      cat("\n\n")
+      if (weighted == TRUE) {
+        cat("Weighted ")
+      } else {
+        cat("Binary ")
+      }
+      cat("within- and between-block density:")
+      cat("\n\n")
+      print(density)
+      cat("\n")
+    }
+    
+    return(density)
+  }
+}
+
+
+dna.timeseries <- function(infile, persons=FALSE, time.unit="month", ignore.duplicates="article", separate.actors=TRUE, start.date="first", stop.date="last", include.persons="all", include.organizations="all", include.categories="all") {
+  if (time.unit != "month" && time.unit != "year" && time.unit != "total") {
+    warning("time.unit argument could not be parsed. Valid values are: month, year, total.")
+  }
+  if (ignore.duplicates != "article" && ignore.duplicates != "month" && ignore.duplicates != "off") {
+    warning("ignore.duplicates argument could not be parsed. Valid values are: article, month, off.")
+  }
+  if (length(include.persons) == 1) {
+    if (include.persons == "all") {
+      include.persons <- c("all", "")
+    } else {
+      warning("Try something like include.persons=c(\"name 1\", \"name 2\").")
+    }
+  }
+  if (length(include.organizations) == 1) {
+    if (include.organizations == "all") {
+      include.organizations <- c("all", "")
+    } else {
+      warning("Try something like include.organizations=c(\"name 1\", \"name 2\").")
+    }
+  }
+  if (length(include.categories) == 1) {
+    if (include.categories == "all") {
+      include.categories <- c("all", "")
+    } else {
+      warning("Try something like include.categories=c(\"concept 1\", \"concept 2\").")
+    }
+  }
+  export <- .jnew("dna/TimeSeriesExporter", infile, persons, time.unit, ignore.duplicates, separate.actors, start.date, stop.date, include.persons, include.organizations, include.categories)
+
+  matObj <- .jcall(export, "[[I", "getMatrixObject") #pull the Java network data into a list of vectors in R
+  num.rows <- length(matObj) #calculate the number of rows of the sociomatrix
+  num.cols <- length(matObj[[1]]) #calculate the number of columns of the sociomatrix
+  mat <- matrix(nrow=num.rows, ncol=num.cols) #create a matrix with these dimensions
+  for (i in 1:length(matObj)) {
+    mat[i,] <- .jevalArray(matObj[[i]]) #fill the matrix with the rows from the list
+  }
+  row.labels <- .jcall(export, "[S", "getRowLabels") #pull the row labels into R
+  col.labels <- .jcall(export, "[S", "getColumnLabels") #pull the column labels into R
+  rownames(mat) <- row.labels #assign the row labels to the matrix
+  colnames(mat) <- col.labels #assign the column labels to the matrix
+  return(mat) #return the matrix
+}
