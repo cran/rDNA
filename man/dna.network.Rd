@@ -10,7 +10,9 @@ dna.network(infile, algorithm="cooccurrence",
   ignore.duplicates=TRUE, include.isolates=FALSE, 
   normalization=FALSE, window.size=100, step.size=1, 
   exclude.persons=c(""), exclude.organizations=c(""), 
-  exclude.categories=c(""))
+  exclude.categories=c(""), invert.persons=FALSE, 
+  invert.organizations=FALSE, invert.categories=FALSE, 
+  verbose=TRUE)
 }
 \details{
 Specify an input .dna file, specify options for generating a network, 
@@ -33,12 +35,17 @@ and transfer the network as a matrix object into \R.
 \item{exclude.persons}{ Specify a list of persons to be excluded from the network. For example, \code{c("person 1", "person 2")}. Note that the names must appear exactly as they are used on the dataset. }
 \item{exclude.organizations}{ Specify a list of organizations to be excluded from the network. For example, \code{c("organization 1", "organization 2")}. Note that the names must appear exactly as they are used on the dataset. }
 \item{exclude.categories}{ Specify a list of categories to be excluded from the network. For example, \code{c("category 1", "category 2")}. Note that the concept names must appear exactly as they are used on the dataset. }
+\item{invert.persons}{Reverse the selection of persons. If \code{TRUE}, the persons specified in the \code{exclude.persons} argument will be included, not excluded. No other persons will be included.}
+\item{invert.organizations}{Reverse the selection of organizations. If \code{TRUE}, the organizations specified in the \code{exclude.organizations} argument will be included, not excluded. No other organizations will be included.}
+\item{invert.categories}{Reverse the selection of categories. If \code{TRUE}, the categories specified in the \code{exclude.categories} argument will be included, not excluded. No other categories will be included.}
+\item{verbose}{If \code{true}, details about the data import and its progress will be printed. If \code{false}, these information will be suppressed.}
 }
 \seealso{
 \code{\link{rDNA}}
 \code{\link{dna.init}}
 \code{\link{dna.gui}}
 \code{\link{dna.attributes}}
+\code{\link{dna.categories}}
 }
 \author{
 Philip Leifeld (\url{http://www.philipleifeld.de})
@@ -46,13 +53,13 @@ Philip Leifeld (\url{http://www.philipleifeld.de})
 \examples{
 # download files and initialize DNA:
 download.file(
-  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.24.jar", 
-  destfile="dna-1.24.jar", mode="wb")
+  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.25.jar", 
+  destfile="dna-1.25.jar", mode="wb")
 download.file(
   "http://www.philipleifeld.de/cms/upload/Downloads/sample.dna", 
   destfile="sample.dna", mode="wb")
 library(rDNA)
-dna.init("dna-1.24.jar")
+dna.init("dna-1.25.jar")
 
 \dontrun{
 # plot a congruence network using the statnet package:

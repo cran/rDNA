@@ -24,9 +24,9 @@ Philip Leifeld (\url{http://www.philipleifeld.de})
 }
 \examples{
 download.file(
-  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.24.jar", 
-  destfile="dna-1.24.jar", mode="wb")
-dna.init("dna-1.24.jar")
+  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.25.jar", 
+  destfile="dna-1.25.jar", mode="wb")
+dna.init("dna-1.25.jar")
 }
 \keyword{Programming|programming|interface}
 \keyword{Programming|IO}

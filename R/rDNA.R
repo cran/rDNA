@@ -1,7 +1,7 @@
-# rDNA 1.1
+# rDNA 1.2
 # http://www.philipleifeld.de
 # Philip Leifeld <Leifeld@coll.mpg.de>
-# 2010-11-23
+# 2011-03-18
 
 require(rJava)
 
@@ -13,18 +13,28 @@ dna.gui <- function() {
   .jnew("dna/Dna")
 }
 
-dna.network <- function(infile, algorithm="cooccurrence", agreement="combined", start.date="01.01.1900", stop.date="31.12.2099", two.mode.type="oc", one.mode.type="organizations", via="categories", ignore.duplicates=TRUE, include.isolates=FALSE, normalization=FALSE, window.size=100, step.size=1, exclude.persons=c(""), exclude.organizations=c(""), exclude.categories=c("")) {
+dna.network <- function(infile, algorithm="cooccurrence", agreement="combined", 
+  start.date="01.01.1900", stop.date="31.12.2099", two.mode.type="oc", 
+  one.mode.type="organizations", via="categories", ignore.duplicates=TRUE, 
+  include.isolates=FALSE, normalization=FALSE, window.size=100, step.size=1, 
+  exclude.persons=c(""), exclude.organizations=c(""), exclude.categories=c(""), 
+  invert.persons=FALSE, invert.organizations=FALSE, invert.categories=FALSE, 
+  verbose=TRUE
+) {
   check <- require(rJava)
   if (check == FALSE) {
-    warning("DNA depends on the package rJava. Please install rJava before using DNA.")
+    stop(paste("DNA depends on the package rJava. Please ", 
+    "install rJava before using DNA."), sep="")
   } else if (algorithm == "sonia") {
-    warning("SoNIA and rSoNIA are not supported. Please use the GUI of DNA instead.")
+    stop(paste("SoNIA and rSoNIA are not supported. Please ", 
+    "use the GUI of DNA instead."), sep="")
   } else if (algorithm == "dynamic") {
-    warning("Dynamic algorithms like SoNIA and Commetrix are not supported. Please use the GUI of DNA instead.")
+    stop(paste("Dynamic algorithms like SoNIA and Commetrix ", 
+    "are not supported. Please use the GUI of DNA instead."), sep="")
   } else if (algorithm == "commetrix") {
-    warning("Commetrix is not supported in the R version of DNA. Please use the GUI of DNA instead.")
+    stop(paste("Commetrix is not supported in the R version of DNA. ", 
+    "Please use the GUI of DNA instead."), sep="")
   } else {
-
     if (length(exclude.persons) == 0) {
       exclude.persons <- c("", "")
     } else if (length(exclude.persons) == 1) {
@@ -41,25 +51,35 @@ dna.network <- function(infile, algorithm="cooccurrence", agreement="combined", 
       exclude.categories <- c(exclude.categories, "")
     }
 
-    export <- .jnew("dna/Export", infile, exclude.persons, exclude.organizations, exclude.categories, start.date, stop.date, agreement, algorithm, two.mode.type, one.mode.type, via, include.isolates, ignore.duplicates, normalization, window.size, step.size, 100, 100, "DNA_CMX", 100.0) #initialize the export class and parse the .dna file
-  
-    matObj <- .jcall(export, "[[D", "matrixObject") #pull the Java network data into a list of vectors in R
+    #initialize the export class and parse the .dna file
+    export <- .jnew("dna/Export", infile, exclude.persons, 
+      exclude.organizations, exclude.categories, start.date, stop.date, 
+      agreement, algorithm, two.mode.type, one.mode.type, via, 
+      include.isolates, ignore.duplicates, normalization, window.size, 
+      step.size, 100, 100, "DNA_CMX", 100.0, invert.persons, 
+      invert.organizations, invert.categories, verbose)
+    
+    #pull the Java network data into a list of vectors in R
+    matObj <- .jcall(export, "[[D", "matrixObject")
     num.rows <- length(matObj) #calculate the number of rows of the sociomatrix
-    num.cols <- length(matObj[[1]]) #calculate the number of columns of the sociomatrix
-    mat <- matrix(nrow=num.rows, ncol=num.cols) #create a matrix with these dimensions
+    num.cols <- length(matObj[[1]]) #calculate the number of columns of matrix
+    #create a matrix with these dimensions
+    mat <- matrix(nrow=num.rows, ncol=num.cols)
     for (i in 1:length(matObj)) {
-      mat[i,] <- .jevalArray(matObj[[i]]) #fill the matrix with the rows from the list
+      mat[i,] <- .jevalArray(matObj[[i]]) #fill matrix with rows from the list
     }
-    row.labels <- .jcall(export, "[S", "getMatrixLabels", TRUE) #pull the row labels into R
-    col.labels <- .jcall(export, "[S", "getMatrixLabels", FALSE) #pull the column labels into R
+    #pull the row labels into R
+    row.labels <- .jcall(export, "[S", "getMatrixLabels", TRUE)
+    #pull the column labels into R
+    col.labels <- .jcall(export, "[S", "getMatrixLabels", FALSE)
     rownames(mat) <- row.labels #assign the row labels to the matrix
     colnames(mat) <- col.labels #assign the column labels to the matrix
     return(mat) #return the matrix
     }
 }
 
-dna.attributes <- function(infile, organizations=TRUE) {
-  file <- .jnew("dna/Export", infile)
+dna.attributes <- function(infile, organizations=TRUE, verbose=TRUE) {
+  file <- .jnew("dna/Export", infile, verbose)
   if (organizations == TRUE) {
     names <- .jcall(file, "[S", "exportAttributes", TRUE, 0)
     type <- .jcall(file, "[S", "exportAttributes", TRUE, 1)
@@ -78,7 +98,9 @@ dna.attributes <- function(infile, organizations=TRUE) {
   return(data)
 }
 
-dna.density <- function(network.matrix, partitions="", weighted=FALSE, verbose=FALSE) {
+dna.density <- function(network.matrix, partitions="", weighted=FALSE, 
+  verbose=FALSE
+) {
   x <- dim(network.matrix)[1]
   y <- dim(network.matrix)[2]
   numCells <- x*y
@@ -103,11 +125,20 @@ dna.density <- function(network.matrix, partitions="", weighted=FALSE, verbose=F
     }
     cat(density)
     cat("\n")
-  return(density)
+    return(density)
   } else {
+    if (class(partitions) != "data.frame"  && class(partitions) != "matrix" 
+      && length(partitions) < 2
+    ) {
+      stop("Partitions should be provided as one-column data.frame or matrix.")
+    }
+    partitions[is.na(partitions)] <- "NA"
     if (class(partitions) != "data.frame"  && class(partitions) != "matrix") {
-      warning("Partitions must be provided as a one-column data.frame or matrix.")
-    } else if (length(rownames(partitions)) == 0 && length(partitions) == length(network.matrix)) {
+      partitions <- matrix(partitions)
+    }
+    if (length(rownames(partitions)) == 0 && length(partitions) == 
+        length(network.matrix[,1])
+    ) {
       rownames(partitions) <- rownames(network.matrix)
     }
     groups <- character(0)
@@ -144,16 +175,19 @@ dna.density <- function(network.matrix, partitions="", weighted=FALSE, verbose=F
           }
         }
         if (weighted == TRUE) {
-          groupDensityTable[rowCounter,colCounter] <- groupDensityTable[rowCounter,colCounter] + network.matrix[i,j]
+          groupDensityTable[rowCounter,colCounter] <- 
+            groupDensityTable[rowCounter,colCounter] + network.matrix[i,j]
         } else if (weighted == FALSE) {
           if (network.matrix[i,j] > 0) {
             value <- 1
           } else {
             value <- 0
           }
-          groupDensityTable[rowCounter,colCounter] <- groupDensityTable[rowCounter,colCounter] + value
+          groupDensityTable[rowCounter,colCounter] <- 
+            groupDensityTable[rowCounter,colCounter] + value
         }
-        groupFrequencyTable[rowCounter,colCounter] <- groupFrequencyTable[rowCounter,colCounter] + 1
+        groupFrequencyTable[rowCounter,colCounter] <- 
+          groupFrequencyTable[rowCounter,colCounter] + 1
       }
     }
     
@@ -189,46 +223,76 @@ dna.density <- function(network.matrix, partitions="", weighted=FALSE, verbose=F
 }
 
 
-dna.timeseries <- function(infile, persons=FALSE, time.unit="month", ignore.duplicates="article", separate.actors=TRUE, start.date="first", stop.date="last", include.persons="all", include.organizations="all", include.categories="all") {
+dna.timeseries <- function(infile, persons=FALSE, time.unit="month", 
+  ignore.duplicates="article", separate.actors=TRUE, start.date="first", 
+  stop.date="last", include.persons="all", include.organizations="all", 
+  include.categories="all", invert.persons=FALSE, invert.organizations=FALSE, 
+  invert.categories=FALSE, agreement="combined", verbose=TRUE
+) {
   if (time.unit != "month" && time.unit != "year" && time.unit != "total") {
-    warning("time.unit argument could not be parsed. Valid values are: month, year, total.")
+    stop(parse("time.unit argument could not be parsed. Valid values ", 
+      "are: \"month\", \"year\", \"total\"."), sep="")
   }
-  if (ignore.duplicates != "article" && ignore.duplicates != "month" && ignore.duplicates != "off") {
-    warning("ignore.duplicates argument could not be parsed. Valid values are: article, month, off.")
+  if (ignore.duplicates != "article" && ignore.duplicates != "month" 
+    && ignore.duplicates != "off"
+  ) {
+    stop(paste("ignore.duplicates argument could not be parsed. Valid values ", 
+      "are: \"article\", \"month\", \"off\"."), sep="")
   }
   if (length(include.persons) == 1) {
     if (include.persons == "all") {
       include.persons <- c("all", "")
+    } else if (class(include.persons) == "character") {
+      include.persons <- c(include.persons, include.persons)
     } else {
-      warning("Try something like include.persons=c(\"name 1\", \"name 2\").")
+      stop("Try include.persons=c(\"name 1\", \"name 2\").")
     }
   }
   if (length(include.organizations) == 1) {
     if (include.organizations == "all") {
       include.organizations <- c("all", "")
+    } else if (class(include.organizations) == "character") {
+      include.organizations <- c(include.organizations, include.organizations)
     } else {
-      warning("Try something like include.organizations=c(\"name 1\", \"name 2\").")
+      stop("Try include.organizations=c(\"name 1\", \"name 2\").")
     }
   }
   if (length(include.categories) == 1) {
     if (include.categories == "all") {
       include.categories <- c("all", "")
+    } else if (class(include.categories) == "character") {
+      include.categories <- c(include.categories, include.categories)
     } else {
-      warning("Try something like include.categories=c(\"concept 1\", \"concept 2\").")
+      warning("Try include.categories=c(\"concept 1\", \"concept 2\").")
     }
   }
-  export <- .jnew("dna/TimeSeriesExporter", infile, persons, time.unit, ignore.duplicates, separate.actors, start.date, stop.date, include.persons, include.organizations, include.categories)
-
-  matObj <- .jcall(export, "[[I", "getMatrixObject") #pull the Java network data into a list of vectors in R
+  if (agreement != "combined" && agreement != "yes" && agreement != "no") {
+    stop(paste("agreement argument could not be parsed. Valid values ", 
+      "are: \"yes\", \"no\", \"combined\"."), sep="")
+  }
+  export <- .jnew("dna/TimeSeriesExporter", infile, persons, time.unit, 
+    ignore.duplicates, separate.actors, start.date, stop.date, include.persons, 
+    include.organizations, include.categories, invert.persons, 
+    invert.organizations, invert.categories, agreement, verbose)
+  
+  #pull the Java network data into a list of vectors in R
+  matObj <- .jcall(export, "[[I", "getMatrixObject")
   num.rows <- length(matObj) #calculate the number of rows of the sociomatrix
-  num.cols <- length(matObj[[1]]) #calculate the number of columns of the sociomatrix
-  mat <- matrix(nrow=num.rows, ncol=num.cols) #create a matrix with these dimensions
+  num.cols <- length(matObj[[1]]) #calculate number of columns of the matrix
+  #create a matrix with these dimensions
+  mat <- matrix(nrow=num.rows, ncol=num.cols)
   for (i in 1:length(matObj)) {
-    mat[i,] <- .jevalArray(matObj[[i]]) #fill the matrix with the rows from the list
+    mat[i,] <- .jevalArray(matObj[[i]]) #fill matrix with the rows from the list
   }
   row.labels <- .jcall(export, "[S", "getRowLabels") #pull the row labels into R
-  col.labels <- .jcall(export, "[S", "getColumnLabels") #pull the column labels into R
+  col.labels <- .jcall(export, "[S", "getColumnLabels") #pull the column labels
   rownames(mat) <- row.labels #assign the row labels to the matrix
   colnames(mat) <- col.labels #assign the column labels to the matrix
   return(mat) #return the matrix
+}
+
+dna.categories <- function(infile, verbose=TRUE) {
+  file <- .jnew("dna/Export", infile, verbose)
+  categories <- .jcall(file, "[S", "getCategories")
+  return(categories)
 }

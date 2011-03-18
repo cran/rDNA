@@ -6,7 +6,9 @@
 dna.timeseries(infile, persons=FALSE, time.unit="month", 
   ignore.duplicates="article", separate.actors=TRUE, 
   start.date="first", stop.date="last", include.persons="all", 
-  include.organizations="all", include.categories="all")
+  include.organizations="all", include.categories="all", 
+  invert.persons=FALSE, invert.organizations=FALSE, 
+  invert.categories=FALSE, agreement="combined", verbose=TRUE)
 }
 \arguments{
 \item{infile}{ The input .dna file as a string (i.e., enclosed in quotation marks). If the file is not in the current working directory, specify the path together with the file name. Include the file suffix. Example: \code{sample.dna}. }
@@ -19,6 +21,11 @@ dna.timeseries(infile, persons=FALSE, time.unit="month",
 \item{include.persons}{ Specify a list of persons to be included in the statistics. For example, \code{c("person 1", "person 2")}. Note that the names must appear exactly as they are used on the dataset. Alternatively, the string value \code{all} will include all persons in the .dna file.}
 \item{include.organizations}{ Specify a list of organizations to be included in the statistics. For example, \code{c("organization 1", "organization 2")}. Note that the names must appear exactly as they are used on the dataset. Alternatively, the string value \code{all} will include all organizations in the .dna file.}
 \item{include.categories}{ Specify a list of categories to be included in the statistics. For example, \code{c("category 1", "category 2")}. Note that the concept names must appear exactly as they are used on the dataset. Alternatively, the value \code{all} will include all categories in the .dna file.}
+\item{invert.persons}{Reverse the selection of persons. If \code{TRUE}, the persons specified in the \code{include.persons} argument will be excluded, not included. All other persons will be included.}
+\item{invert.organizations}{Reverse the selection of organizations. If \code{TRUE}, the organizations specified in the \code{include.organizations} argument will be excluded, not included. All other organizations will be included.}
+\item{invert.categories}{Reverse the selection of categories. If \code{TRUE}, the categories specified in the \code{include.categories} argument will be excluded, not included. All other categories will be included.}
+\item{agreement}{Can be \code{combined}, \code{yes} or \code{no}. If \code{yes}, only positive statements will be counted. If \code{no}, only negative statements will be counted. If \code{combined}, all kinds of statements are counted.}
+\item{verbose}{If \code{true}, details about the data import and its progress will be printed. If \code{false}, these information will be suppressed.}
 }
 \details{
 An important piece of information in actor-based content 
@@ -33,18 +40,19 @@ overall.
 \code{\link{dna.init}}
 \code{\link{dna.gui}}
 \code{\link{dna.network}}
+\code{\link{dna.categories}}
 }
 \author{
 Philip Leifeld (\url{http://www.philipleifeld.de})
 }
 \examples{
 download.file(
-  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.24.jar", 
-  destfile="dna-1.24.jar", mode="wb")
+  "http://www.philipleifeld.de/cms/upload/Downloads/dna-1.25.jar", 
+  destfile="dna-1.25.jar", mode="wb")
 download.file(
   "http://www.philipleifeld.de/cms/upload/Downloads/sample.dna", 
   destfile="sample.dna", mode="wb")
-dna.init("dna-1.24.jar")
+dna.init("dna-1.25.jar")
 time.series <- dna.timeseries("sample.dna")
 }
 \keyword{Programming|programming|interface}

@@ -8,8 +8,7 @@
 A package that controls the Java software Discourse 
 Network Analyzer (\acronym{DNA}) from within \R. Network matrices, 
 statement frequency time series and attributes of actors 
-can be transferred directly into \R. Requires the package \pkg{rJava}. 
-Please obtain the latest copy of DNA from http://www.philipleifeld.de.
+can be transferred directly into \R. Requires the package \pkg{rJava}.
 
 Make sure you execute \link{dna.init} before running any other rDNA 
 command.
@@ -21,6 +20,9 @@ To display citation information, execute \code{citation("rDNA")}.
 \code{\link{dna.gui}}
 \code{\link{dna.attributes}}
 \code{\link{dna.network}}
+\code{\link{dna.timeseries}}
+\code{\link{dna.categories}}
+\code{\link{dna.density}}
 }
 \author{
 Philip Leifeld (\url{http://www.philipleifeld.de})
