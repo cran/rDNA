@@ -1,0 +1,14 @@
+32fde6eaecb476108d16b58a2a8fbdeb *DESCRIPTION
+3369a407291533475b05c57f5535e62f *NAMESPACE
+9946a566dee22f2b1275368bc9ab2a10 *R/rDNA.R
+b4731d9cb00ab9f46b03c65f7d6da846 *inst/CITATION
+0bc0d710e16715953cdf0d7714278307 *inst/doc/history.txt
+b1e44d986a643c81cddb2e42354572a8 *inst/extdata/sample.dna
+05c4e2b17238e0ccf3be7868c82684ee *man/dna.attributes.Rd
+b6af0d99f4addaa479e1d192586100ce *man/dna.categories.Rd
+d9a003182190fe513a10e6f74d13cfe5 *man/dna.density.Rd
+a77a0d116c443e89f6689dff8f774745 *man/dna.gui.Rd
+a64796673f18e00f39ab00482c87ec04 *man/dna.init.Rd
+33e486b94427a795e50d053d6cd7b1dc *man/dna.network.Rd
+fae00274ea604d978dafec4212c694c7 *man/dna.timeseries.Rd
+efafca5c9281bf40820f914a99cc74ab *man/rDNA-package.Rd
